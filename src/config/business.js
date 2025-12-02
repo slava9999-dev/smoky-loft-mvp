@@ -31,21 +31,21 @@ export const businessConfig = {
       title: "Кальян Classic",
       price: 1200,
       description: "Легкие и средние табаки на классической чаше.",
-      image: "https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&q=80&w=800"
+      image: "/images/hookah-classic.webp"
     },
     {
       id: 2,
       title: "Авторский Микс",
       price: 1700,
       description: "Фруктовая чаша (грейпфрут/ананас), премиум табаки.",
-      image: "https://images.unsplash.com/photo-1512418490979-92798cec1380?auto=format&fit=crop&q=80&w=800"
+      image: "/images/hookah-fruit.webp"
     },
     {
       id: 3,
       title: "VIP Комната + PS5",
       price: 500, 
       description: "Отдельная комната, большой экран, приставка. Цена за час.",
-      image: "https://images.unsplash.com/photo-1605901309584-818e25960b8f?auto=format&fit=crop&q=80&w=800"
+      image: "/images/vip-room.webp"
     }
   ]
 };
