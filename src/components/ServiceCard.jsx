@@ -15,6 +15,8 @@ export function ServiceCard({ service, onAdd }) {
           src={service.image} 
           alt={service.title} 
           className="w-full h-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
         />
       </div>
       <div className="p-4">
