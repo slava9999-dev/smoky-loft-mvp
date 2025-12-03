@@ -21,12 +21,12 @@ export function ServiceCard({ service, onAdd }) {
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className={`font-bold text-lg ${theme.text}`}>{service.title}</h3>
-          <span className={`font-medium ${theme.accent} text-white px-2 py-0.5 rounded text-sm`}>
+          <h3 className={`font-bold text-xl ${theme.text} tracking-tight leading-tight`}>{service.title}</h3>
+          <span className={`font-semibold ${theme.accent} text-white px-2.5 py-1 rounded-lg text-sm whitespace-nowrap ml-2`}>
             {service.price} {businessConfig.currency}
           </span>
         </div>
-        <p className="text-neutral-400 text-sm mb-4 line-clamp-2">
+        <p className="text-neutral-400 text-sm mb-4 line-clamp-2 leading-relaxed">
           {service.description}
         </p>
         <button 
