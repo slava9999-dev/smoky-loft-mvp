@@ -2,18 +2,42 @@ import { useState } from 'react';
 import { businessConfig } from './config/business';
 import { ServiceCard } from './components/ServiceCard';
 import { BookingModal } from './components/BookingModal';
+import { Toast } from './components/ui/Toast';
+import { WifiCard } from './components/WifiCard';
+import { Footer } from './components/Footer';
 import { ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function App() {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const { theme, hero, services, loyalty } = businessConfig;
 
+  // Persist cart
+  useState(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  const showNotification = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 2000);
+  };
+
   const addToCart = (service) => {
-    setCart([...cart, service]);
-    // Haptic feedback pattern if available, otherwise just visual
+    setCart(prev => {
+      const newCart = [...prev, service];
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
+    });
+    
+    // Haptic feedback
     if (window.navigator.vibrate) window.navigator.vibrate(50);
+    
+    showNotification(`Добавлено: ${service.title}`);
   };
 
   return (
@@ -33,7 +57,7 @@ function App() {
         </div>
 
         {/* Loyalty Card */}
-        <div className={`p-6 rounded-2xl bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 text-white shadow-2xl mb-8 border border-amber-600/30`}>
+        <div className={`p-6 rounded-2xl bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 text-white shadow-2xl mb-4 border border-amber-600/30`}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-bold text-lg tracking-tight">{loyalty.title}</h3>
             <span className="bg-white/25 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/20">
@@ -42,12 +66,15 @@ function App() {
           </div>
           <p className="text-sm opacity-95 leading-relaxed">{loyalty.description}</p>
         </div>
+
+        {/* Wifi Card */}
+        <WifiCard onCopy={() => showNotification("Пароль скопирован!")} />
       </header>
 
       {/* Services Grid */}
       <main className="px-6 pb-6">
         <h2 className="text-2xl font-bold mb-5 tracking-tight">Меню & Услуги</h2>
-        <div className="grid gap-4">
+        <div className="grid gap-4 mb-8">
           {services.map(service => (
             <ServiceCard 
               key={service.id} 
@@ -57,6 +84,8 @@ function App() {
           ))}
         </div>
       </main>
+
+      <Footer onDownloadPdf={() => showNotification("Открываем меню...", "success")} />
 
       {/* Floating Action Button */}
       {cart.length > 0 && (
@@ -82,6 +111,13 @@ function App() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         cart={cart} 
+        clearCart={() => setCart([])}
+      />
+
+      <Toast 
+        isVisible={toast.show} 
+        message={toast.message} 
+        onClose={() => setToast(prev => ({ ...prev, show: false }))} 
       />
     </div>
   );

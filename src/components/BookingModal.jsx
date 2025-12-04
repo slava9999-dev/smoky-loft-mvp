@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { businessConfig } from '../config/business';
 
-export function BookingModal({ isOpen, onClose, cart }) {
+export function BookingModal({ isOpen, onClose, cart, clearCart }) {
   const [step, setStep] = useState(1);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -19,6 +19,30 @@ export function BookingModal({ isOpen, onClose, cart }) {
       setTime('');
     }
   }, [isOpen]);
+
+  const formatPhone = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length === 0) return '';
+    if (numbers.length > 11) return contact.phone; // Limit length
+    
+    let formatted = '+7';
+    if (numbers.length > 1) formatted += ' (' + numbers.substring(1, 4);
+    if (numbers.length > 4) formatted += ') ' + numbers.substring(4, 7);
+    if (numbers.length > 7) formatted += '-' + numbers.substring(7, 9);
+    if (numbers.length > 9) formatted += '-' + numbers.substring(9, 11);
+    
+    return formatted;
+  };
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value;
+    // Allow deleting
+    if (val.length < contact.phone.length) {
+      setContact({ ...contact, phone: val });
+      return;
+    }
+    setContact({ ...contact, phone: formatPhone(val) });
+  };
 
   const dates = [
     { label: 'Сегодня', value: 'today' },
@@ -44,6 +68,7 @@ ${cart.map(i => `- ${i.title} (${i.price} ${businessConfig.currency})`).join('\n
 
     const url = `https://t.me/${businessConfig.telegramAdmin}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
+    clearCart();
     onClose();
   };
 
@@ -128,10 +153,10 @@ ${cart.map(i => `- ${i.title} (${i.price} ${businessConfig.currency})`).join('\n
               />
               <input
                 type="tel"
-                placeholder="Телефон"
+                placeholder="+7 (___) ___-__-__"
                 className="w-full p-3 rounded-xl bg-neutral-900 border border-neutral-700 text-white focus:outline-none focus:border-amber-500"
                 value={contact.phone}
-                onChange={e => setContact({...contact, phone: e.target.value})}
+                onChange={handlePhoneChange}
               />
               
               <button

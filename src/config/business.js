@@ -24,6 +24,15 @@ export const businessConfig = {
     description: "Замена чаши бесплатно при заказе от 3000₽."
   },
 
+  wifi: {
+    network: "Smoky_Guest",
+    password: "smoke2025"
+  },
+
+  social: {
+    instagram: "https://instagram.com"
+  },
+
   // PRESERVE STRUCTURE for ServiceCard component
   services: [
     {
