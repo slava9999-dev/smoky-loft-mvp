@@ -12,8 +12,13 @@ import { seedDemoBookings } from './services/bookingService';
 
 function App() {
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error('Ошибка чтения корзины:', e);
+      return [];
+    }
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
@@ -22,7 +27,11 @@ function App() {
 
   // Seed demo bookings ОДИН РАЗ при старте приложения
   useEffect(() => {
-    seedDemoBookings();
+    try {
+      seedDemoBookings();
+    } catch (e) {
+      console.error('Ошибка инициализации демо-данных:', e); 
+    }
   }, []);
 
   // Persist cart
