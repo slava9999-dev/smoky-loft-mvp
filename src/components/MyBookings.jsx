@@ -38,21 +38,25 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
   };
 
   // Обработка отмены
-  const handleCancel = async (bookingId) => {
+  const handleCancel = (bookingId) => {
     setIsDeleting(true);
     
-    // Немного задержки для UX
-    await new Promise(r => setTimeout(r, 500));
-    
-    const success = cancelBooking(bookingId);
-    
-    if (success) {
-      setBookings(prev => prev.filter(b => b.id !== bookingId));
-      if (onCancelSuccess) onCancelSuccess();
-    }
-    
-    setIsDeleting(false);
-    setConfirmDelete(null);
+    // Небольшая задержка для визуального эффекта
+    setTimeout(() => {
+      try {
+        const success = cancelBooking(bookingId);
+        
+        if (success) {
+          setBookings(prev => prev.filter(b => b.id !== bookingId));
+          if (onCancelSuccess) onCancelSuccess();
+        }
+      } catch (error) {
+        console.error('Ошибка отмены брони:', error);
+      } finally {
+        setIsDeleting(false);
+        setConfirmDelete(null);
+      }
+    }, 300);
   };
 
   if (!isOpen) return null;

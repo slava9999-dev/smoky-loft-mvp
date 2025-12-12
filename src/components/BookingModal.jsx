@@ -54,9 +54,9 @@ export function BookingModal({ isOpen, onClose, cart, clearCart, onBookingSucces
   };
 
   const dates = [
-    { label: 'Сегодня', value: 'today' },
-    { label: 'Завтра', value: 'tomorrow' },
-    { label: 'Послезавтра', value: 'after_tomorrow' }
+    { label: 'Сегодня', shortLabel: 'Сегодня', value: 'today' },
+    { label: 'Завтра', shortLabel: 'Завтра', value: 'tomorrow' },
+    { label: 'Послезавтра', shortLabel: 'Послезав.', value: 'after_tomorrow' }
   ];
 
   const times = ['14:00', '16:00', '18:00', '20:00', '22:00', '00:00'];
@@ -150,18 +150,19 @@ ${cart.map(i => `- ${i.title} (${i.price} ${businessConfig.currency})`).join('\n
                   <label className="flex items-center gap-2 text-sm text-amber-400 font-bold mb-4 uppercase tracking-wider">
                     <Calendar size={16} /> Выберите день
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="flex gap-2 sm:gap-3">
                     {dates.map(d => (
                       <button
                         key={d.value}
                         onClick={() => setDate(d.label)}
-                        className={`px-4 py-4 rounded-xl text-sm font-bold border-2 transition-all ${
+                        className={`flex-1 px-2 sm:px-4 py-3 sm:py-4 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all whitespace-nowrap ${
                           date === d.label 
                             ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg shadow-amber-900/20' 
                             : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-600'
                         }`}
                       >
-                        {d.label}
+                        <span className="hidden sm:inline">{d.label}</span>
+                        <span className="sm:hidden">{d.shortLabel}</span>
                       </button>
                     ))}
                   </div>

@@ -125,14 +125,14 @@ function App() {
 
       {/* Кнопка "Мои бронирования" - фиксированная */}
       <motion.button
-        initial={{ x: 50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5, type: 'spring' }}
         onClick={() => setIsMyBookingsOpen(true)}
-        className="fixed top-6 right-6 p-3 rounded-xl bg-neutral-800/90 backdrop-blur-sm border border-neutral-700 text-amber-400 hover:bg-neutral-700 transition-colors shadow-lg z-30"
-        title="Мои бронирования"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold shadow-lg shadow-amber-900/30 hover:from-amber-500 hover:to-orange-500 transition-all z-30 flex items-center gap-2 border border-amber-500/30"
       >
-        <CalendarDays size={20} />
+        <CalendarDays size={18} />
+        <span className="text-sm">Мои брони</span>
       </motion.button>
 
       <Toast 

@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { businessConfig } from '../config/business';
 import { getBookingsForDate } from '../services/bookingService';
+import { FullScreenHallMap } from './FullScreenHallMap';
 import { 
   Crown, Sofa, Armchair, Wine, Users, Clock, Calendar, X, Sparkles,
   Zap, Star, ChevronLeft, ChevronRight, Eye, Volume2, VolumeX,
-  MapPin, Check, Info, ChevronDown, Maximize2
+  MapPin, Check, Info, ChevronDown, Maximize2, Map
 } from 'lucide-react';
 
 // =============================================================================
@@ -941,6 +942,7 @@ function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, se
   const [bookings, setBookings] = useState([]);
   const [activeZone, setActiveZone] = useState(null);
   const [showMiniMap, setShowMiniMap] = useState(false);
+  const [showFullMap, setShowFullMap] = useState(false);
 
   // Загружаем бронирования
   useEffect(() => {
@@ -984,13 +986,25 @@ function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, se
             </p>
           </div>
           
-          <motion.button
-            className="p-3 rounded-xl bg-neutral-800/80 border border-neutral-700/50 text-neutral-400"
-            onClick={() => setShowMiniMap(!showMiniMap)}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Maximize2 size={18} className={showMiniMap ? 'text-amber-400' : ''} />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* Кнопка открытия полноэкранной схемы */}
+            <motion.button
+              className="p-3 rounded-xl bg-amber-600/20 border border-amber-500/50 text-amber-400"
+              onClick={() => setShowFullMap(true)}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Map size={18} />
+            </motion.button>
+            
+            {/* Мини-карта toggle */}
+            <motion.button
+              className="p-3 rounded-xl bg-neutral-800/80 border border-neutral-700/50 text-neutral-400"
+              onClick={() => setShowMiniMap(!showMiniMap)}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Maximize2 size={18} className={showMiniMap ? 'text-amber-400' : ''} />
+            </motion.button>
+          </div>
         </div>
 
         {/* Mini-map (expandable) */}
@@ -1064,6 +1078,16 @@ function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, se
           <span className="text-xs text-neutral-400">Занят</span>
         </div>
       </div>
+
+      {/* Полноэкранная схема зала */}
+      <FullScreenHallMap
+        isOpen={showFullMap}
+        onClose={() => setShowFullMap(false)}
+        tables={hall.tables}
+        selectedTableId={selectedTableId}
+        bookedTableIds={bookedTableIds}
+        onSelectTable={onSelectTable}
+      />
     </div>
   );
 }
