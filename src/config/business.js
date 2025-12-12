@@ -75,11 +75,11 @@ export const businessConfig = {
       { id: 6, label: "Диван 4", x: 60, y: 55, type: "sofa", seats: 5, minOrder: 2500, features: ["comfort"] },
       
       // VIP зона (приватная) - внизу по центру
-      { id: 7, label: "VIP Lounge", x: 47, y: 80, type: "vip", seats: 10, minOrder: 5000, features: ["private", "ps5", "premium", "hookah_included"] },
+      { id: 7, label: "VIP Lounge", x: 47, y: 75, type: "vip", seats: 10, minOrder: 5000, features: ["private", "ps5", "premium", "hookah_included"] },
       
       // Барная стойка (быстрые встречи, одиночки)
-      { id: 8, label: "Бар 1", x: 82, y: 30, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
-      { id: 9, label: "Бар 2", x: 82, y: 50, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
+      { id: 8, label: "Бар 1", x: 78, y: 30, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
+      { id: 9, label: "Бар 2", x: 78, y: 50, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
     ],
     // Зоны зала
     zones: {
