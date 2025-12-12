@@ -986,25 +986,15 @@ function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, se
             </p>
           </div>
           
-          <div className="flex items-center gap-2">
-            {/* Кнопка открытия полноэкранной схемы */}
-            <motion.button
-              className="p-3 rounded-xl bg-amber-600/20 border border-amber-500/50 text-amber-400"
-              onClick={() => setShowFullMap(true)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Map size={18} />
-            </motion.button>
-            
-            {/* Мини-карта toggle */}
-            <motion.button
-              className="p-3 rounded-xl bg-neutral-800/80 border border-neutral-700/50 text-neutral-400"
-              onClick={() => setShowMiniMap(!showMiniMap)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Maximize2 size={18} className={showMiniMap ? 'text-amber-400' : ''} />
-            </motion.button>
-          </div>
+          {/* Кнопка открытия полноэкранной схемы */}
+          <motion.button
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 border border-amber-500/50 text-white font-medium flex items-center gap-2 shadow-lg shadow-amber-900/20"
+            onClick={() => setShowFullMap(true)}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Map size={16} />
+            <span className="text-sm">Схема зала</span>
+          </motion.button>
         </div>
 
         {/* Mini-map (expandable) */}

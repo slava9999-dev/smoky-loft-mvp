@@ -39,23 +39,30 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
 
   // Обработка отмены
   const handleCancel = (bookingId) => {
+    console.log('handleCancel вызван с ID:', bookingId);
     setIsDeleting(true);
     
     // Небольшая задержка для визуального эффекта
     setTimeout(() => {
       try {
+        console.log('Вызываем cancelBooking...');
         const success = cancelBooking(bookingId);
+        console.log('cancelBooking вернул:', success);
         
         if (success) {
           setBookings(prev => prev.filter(b => b.id !== bookingId));
           if (onCancelSuccess) onCancelSuccess();
+        } else {
+          // Даже если не нашли - убираем из UI (возможно уже удалено)
+          setBookings(prev => prev.filter(b => String(b.id) !== String(bookingId)));
         }
       } catch (error) {
         console.error('Ошибка отмены брони:', error);
-      } finally {
-        setIsDeleting(false);
-        setConfirmDelete(null);
       }
+      
+      // Гарантированно сбрасываем состояние
+      setIsDeleting(false);
+      setConfirmDelete(null);
     }, 300);
   };
 
@@ -172,8 +179,10 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
                       <div className="mt-4 pt-3 border-t border-neutral-700/50">
                         {!isConfirming ? (
                           <button
+                            type="button"
                             onClick={() => setConfirmDelete(booking.id)}
-                            className="w-full py-2.5 px-4 rounded-xl bg-neutral-700/50 hover:bg-red-900/30 border border-transparent hover:border-red-500/30 text-neutral-400 hover:text-red-400 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                            onTouchEnd={(e) => { e.preventDefault(); setConfirmDelete(booking.id); }}
+                            className="w-full py-2.5 px-4 rounded-xl bg-neutral-700/50 hover:bg-red-900/30 border border-transparent hover:border-red-500/30 text-neutral-400 hover:text-red-400 transition-all flex items-center justify-center gap-2 text-sm font-medium active:bg-red-900/30"
                           >
                             <Trash2 size={16} />
                             Отменить бронь
@@ -190,16 +199,20 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
                             </div>
                             <div className="flex gap-2">
                               <button
+                                type="button"
                                 onClick={() => setConfirmDelete(null)}
+                                onTouchEnd={(e) => { e.preventDefault(); setConfirmDelete(null); }}
                                 disabled={isDeleting}
-                                className="flex-1 py-2.5 rounded-xl bg-neutral-700 text-white font-medium hover:bg-neutral-600 transition-colors"
+                                className="flex-1 py-2.5 rounded-xl bg-neutral-700 text-white font-medium hover:bg-neutral-600 transition-colors active:bg-neutral-600"
                               >
                                 Нет, оставить
                               </button>
                               <button
+                                type="button"
                                 onClick={() => handleCancel(booking.id)}
+                                onTouchEnd={(e) => { e.preventDefault(); if (!isDeleting) handleCancel(booking.id); }}
                                 disabled={isDeleting}
-                                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-500 transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-500 transition-colors flex items-center justify-center gap-2 active:bg-red-500"
                               >
                                 {isDeleting ? (
                                   <motion.div

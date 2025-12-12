@@ -71,14 +71,23 @@ export function clearBookings() {
 // Отменить бронирование по ID
 export function cancelBooking(bookingId) {
   const bookings = getBookings();
-  const index = bookings.findIndex(b => b.id === bookingId);
   
-  if (index === -1) return false;
+  // Приводим к строке для корректного сравнения
+  const idStr = String(bookingId);
+  const index = bookings.findIndex(b => String(b.id) === idStr);
+  
+  console.log('cancelBooking:', { bookingId, idStr, index, bookingsCount: bookings.length });
+  
+  if (index === -1) {
+    console.warn('Бронирование не найдено:', bookingId);
+    return false;
+  }
   
   // Удаляем бронирование
   bookings.splice(index, 1);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
   
+  console.log('Бронирование успешно отменено');
   return true;
 }
 
@@ -107,9 +116,24 @@ export function getBookingById(bookingId) {
 }
 
 // Демо-данные для тестирования (новая планировка с 9 столами)
+const DEMO_SEEDED_KEY = 'smoky_loft_demo_seeded';
+
 export function seedDemoBookings() {
+  // Проверяем флаг - демо создаётся ТОЛЬКО ОДИН РАЗ
+  const alreadySeeded = localStorage.getItem(DEMO_SEEDED_KEY);
+  if (alreadySeeded) {
+    console.log('Демо-данные уже были созданы ранее');
+    return;
+  }
+  
   const existingBookings = getBookings();
-  if (existingBookings.length > 0) return; // Уже есть данные
+  if (existingBookings.length > 0) {
+    console.log('Есть реальные бронирования, пропускаем демо');
+    localStorage.setItem(DEMO_SEEDED_KEY, 'true');
+    return;
+  }
+  
+  console.log('Создаём демо-бронирования...');
   
   const demoBookings = [
     // Сегодня
@@ -123,4 +147,14 @@ export function seedDemoBookings() {
   ];
   
   demoBookings.forEach(b => addBooking(b));
+  
+  // Ставим флаг что демо создано
+  localStorage.setItem(DEMO_SEEDED_KEY, 'true');
+  console.log('Демо-бронирования созданы!');
+}
+
+// Сброс флага демо (для тестирования)
+export function resetDemoFlag() {
+  localStorage.removeItem(DEMO_SEEDED_KEY);
+  console.log('Флаг демо сброшен');
 }
