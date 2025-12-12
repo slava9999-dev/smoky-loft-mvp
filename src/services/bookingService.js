@@ -66,6 +66,46 @@ export function clearBookings() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// ===== НОВЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ БРОНЯМИ =====
+
+// Отменить бронирование по ID
+export function cancelBooking(bookingId) {
+  const bookings = getBookings();
+  const index = bookings.findIndex(b => b.id === bookingId);
+  
+  if (index === -1) return false;
+  
+  // Удаляем бронирование
+  bookings.splice(index, 1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+  
+  return true;
+}
+
+// Получить бронирования пользователя по телефону
+export function getUserBookings(phone) {
+  const bookings = getBookings();
+  // Нормализуем телефон для сравнения
+  const normalizedPhone = phone.replace(/\D/g, '');
+  return bookings.filter(b => {
+    const bookingPhone = b.phone?.replace(/\D/g, '') || '';
+    return bookingPhone === normalizedPhone || bookingPhone.endsWith(normalizedPhone.slice(-10));
+  });
+}
+
+// Получить все активные бронирования (не прошедшие)
+export function getActiveBookings() {
+  const bookings = getBookings();
+  const activeDates = ['Сегодня', 'Завтра', 'Послезавтра'];
+  return bookings.filter(b => activeDates.includes(b.date));
+}
+
+// Получить бронирование по ID
+export function getBookingById(bookingId) {
+  const bookings = getBookings();
+  return bookings.find(b => b.id === bookingId);
+}
+
 // Демо-данные для тестирования (новая планировка с 9 столами)
 export function seedDemoBookings() {
   const existingBookings = getBookings();

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { businessConfig } from './config/business';
 import { ServiceCard } from './components/ServiceCard';
 import { BookingModal } from './components/BookingModal';
+import { MyBookings } from './components/MyBookings';
 import { Toast } from './components/ui/Toast';
 import { WifiCard } from './components/WifiCard';
 import { Footer } from './components/Footer';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, CalendarDays } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const { theme, hero, services, loyalty } = businessConfig;
 
@@ -114,6 +116,24 @@ function App() {
         clearCart={() => setCart([])}
         onBookingSuccess={() => showNotification("Заявка сформирована! Переход в Telegram...", "success")}
       />
+
+      <MyBookings 
+        isOpen={isMyBookingsOpen}
+        onClose={() => setIsMyBookingsOpen(false)}
+        onCancelSuccess={() => showNotification("Бронь отменена", "success")}
+      />
+
+      {/* Кнопка "Мои бронирования" - фиксированная */}
+      <motion.button
+        initial={{ x: 50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => setIsMyBookingsOpen(true)}
+        className="fixed top-6 right-6 p-3 rounded-xl bg-neutral-800/90 backdrop-blur-sm border border-neutral-700 text-amber-400 hover:bg-neutral-700 transition-colors shadow-lg z-30"
+        title="Мои бронирования"
+      >
+        <CalendarDays size={20} />
+      </motion.button>
 
       <Toast 
         isVisible={toast.show} 
