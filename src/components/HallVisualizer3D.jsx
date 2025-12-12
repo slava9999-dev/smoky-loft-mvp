@@ -1076,6 +1076,7 @@ function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, se
         tables={hall.tables}
         selectedTableId={selectedTableId}
         bookedTableIds={bookedTableIds}
+        bookings={bookings}
         onSelectTable={onSelectTable}
       />
     </div>
@@ -1362,6 +1363,7 @@ export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate,
       tables={hall.tables}
       selectedTableId={selectedTableId}
       bookedTableIds={bookedTableIds}
+      bookings={bookings}
       onSelectTable={onSelectTable}
       embedded={false}
     />

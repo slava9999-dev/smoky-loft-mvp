@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, ZoomIn, ZoomOut, Crown, Sofa, Armchair, Wine, 
-  Users, Sparkles, MapPin, RotateCcw
+  Users, Sparkles, MapPin, RotateCcw, Clock, UserCheck
 } from 'lucide-react';
 import { businessConfig } from '../config/business';
 
@@ -15,42 +15,69 @@ export function FullScreenHallMap({
   tables, 
   selectedTableId, 
   bookedTableIds = [],
+  bookings = [], // Информация о бронированиях с временем
   onSelectTable,
-  embedded = false // Новый prop для встраивания
+  embedded = false
 }) {
   const [zoom, setZoom] = useState(1);
   const [selectedInfo, setSelectedInfo] = useState(null);
 
+  // Функция получения брони для стола
+  const getBookingForTable = (tableId) => {
+    return bookings.find(b => b.tableId === tableId);
+  };
+
   const { hall } = businessConfig;
 
+  // Размеры для десктопа - широкая схема
+  const isDesktopView = !embedded && typeof window !== 'undefined' && window.innerWidth >= 768;
+
   // Типы столов с настройками
+  const getTableSize = (type) => {
+    const sizes = {
+      vip: { 
+        mobile: { w: 90, h: 55 },
+        desktop: { w: 140, h: 85 }
+      },
+      sofa: { 
+        mobile: { w: 70, h: 45 },
+        desktop: { w: 110, h: 70 }
+      },
+      window: { 
+        mobile: { w: 55, h: 55 },
+        desktop: { w: 85, h: 85 }
+      },
+      bar: { 
+        mobile: { w: 35, h: 60 },
+        desktop: { w: 55, h: 90 }
+      },
+    };
+    return isDesktopView ? sizes[type]?.desktop : sizes[type]?.mobile || sizes.window.mobile;
+  };
+
   const tableTypes = {
     vip: { 
       icon: Crown, 
       color: 'amber',
       gradient: 'from-amber-600 to-yellow-500',
-      size: { w: embedded ? 110 : 90, h: embedded ? 70 : 55 },
       label: 'VIP Lounge'
     },
     sofa: { 
       icon: Sofa, 
       color: 'orange',
       gradient: 'from-orange-600 to-orange-500',
-      size: { w: embedded ? 90 : 70, h: embedded ? 55 : 45 },
       label: 'Диван'
     },
     window: { 
       icon: Armchair, 
       color: 'emerald',
       gradient: 'from-emerald-600 to-emerald-500',
-      size: { w: embedded ? 70 : 55, h: embedded ? 70 : 55 },
       label: 'У окна'
     },
     bar: { 
       icon: Wine, 
       color: 'rose',
       gradient: 'from-rose-600 to-pink-500',
-      size: { w: embedded ? 45 : 35, h: embedded ? 75 : 60 },
       label: 'Бар'
     },
   };
@@ -83,66 +110,102 @@ export function FullScreenHallMap({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className={`${containerClass} bg-black`}
+        className={`${containerClass} bg-black overflow-hidden`}
       >
-        {/* Фон с градиентом */}
+        {/* Premium Background с атмосферой */}
         <div 
           className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse at 30% 20%, rgba(180, 120, 60, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 80%, rgba(255, 100, 50, 0.1) 0%, transparent 40%),
-              linear-gradient(180deg, #0f0d0b 0%, #1a1614 40%, #0d0b09 100%)
+              radial-gradient(ellipse at 20% 30%, rgba(180, 120, 60, 0.2) 0%, transparent 40%),
+              radial-gradient(ellipse at 80% 20%, rgba(255, 150, 50, 0.15) 0%, transparent 35%),
+              radial-gradient(ellipse at 50% 80%, rgba(200, 100, 50, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse at 10% 90%, rgba(150, 80, 40, 0.15) 0%, transparent 40%),
+              linear-gradient(180deg, #0a0908 0%, #151210 30%, #1a1614 60%, #0d0b09 100%)
             `
           }}
         />
 
-        {/* Header - только для мобильного fullscreen */}
+        {/* Animated Smoke Particles */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full opacity-20"
+              style={{
+                width: `${100 + i * 50}px`,
+                height: `${100 + i * 50}px`,
+                left: `${10 + i * 12}%`,
+                top: `${20 + (i % 3) * 25}%`,
+                background: `radial-gradient(circle, rgba(200, 150, 100, 0.3) 0%, transparent 70%)`,
+                filter: 'blur(40px)',
+              }}
+              animate={{
+                y: [0, -30, 0],
+                x: [0, i % 2 === 0 ? 20 : -20, 0],
+                scale: [1, 1.2, 1],
+                opacity: [0.15, 0.25, 0.15],
+              }}
+              transition={{
+                duration: 8 + i * 2,
+                repeat: Infinity,
+                delay: i * 0.5,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-10 left-10 w-4 h-4 rounded-full bg-amber-500/30 blur-sm animate-pulse" />
+        <div className="absolute top-20 right-20 w-3 h-3 rounded-full bg-orange-500/40 blur-sm animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute bottom-40 left-20 w-5 h-5 rounded-full bg-amber-600/20 blur-md animate-pulse" style={{ animationDelay: '1s' }} />
+
+        {/* Header - только для fullscreen */}
         {!embedded && (
-          <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <MapPin size={20} className="text-amber-400" />
+          <div className="absolute top-0 left-0 right-0 z-20 p-4 md:p-6 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/30 to-orange-600/20 flex items-center justify-center border border-amber-500/30 shadow-lg shadow-amber-900/20">
+                <MapPin size={24} className="text-amber-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Схема зала</h2>
-                <p className="text-xs text-neutral-400">Нажмите на столик для выбора</p>
+                <h2 className="text-xl md:text-2xl font-bold text-white">Smoky Loft</h2>
+                <p className="text-sm text-amber-400/80">Выберите свой столик</p>
               </div>
             </div>
             
             <button
               onClick={onClose}
-              className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white"
+              className="p-3 md:p-4 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white hover:bg-neutral-700 transition-colors"
             >
-              <X size={20} />
+              <X size={22} />
             </button>
           </div>
         )}
 
         {/* Zoom Controls */}
-        <div className="absolute bottom-24 right-4 z-20 flex flex-col gap-2">
+        <div className={`absolute ${embedded ? 'bottom-24 right-4' : 'bottom-32 right-6'} z-20 flex flex-col gap-2`}>
           <button
             onClick={() => setZoom(Math.min(zoom + 0.2, 2))}
-            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white"
+            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white hover:bg-neutral-700 transition-colors"
           >
             <ZoomIn size={18} />
           </button>
           <button
             onClick={() => setZoom(Math.max(zoom - 0.2, 0.6))}
-            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white"
+            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white hover:bg-neutral-700 transition-colors"
           >
             <ZoomOut size={18} />
           </button>
           <button
             onClick={() => setZoom(1)}
-            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-neutral-400"
+            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-neutral-400 hover:bg-neutral-700 transition-colors"
           >
             <RotateCcw size={18} />
           </button>
         </div>
 
         {/* Main Hall Map */}
-        <div className={`absolute inset-0 ${embedded ? 'pt-4 pb-20 px-4' : 'pt-20 pb-32 px-4'} overflow-auto`}>
+        <div className={`absolute inset-0 ${embedded ? 'pt-4 pb-20 px-4' : 'pt-24 pb-28 px-4 md:px-10'} overflow-auto flex items-center justify-center`}>
           <motion.div
             className="relative w-full h-full flex items-center justify-center"
             style={{ 
@@ -151,41 +214,93 @@ export function FullScreenHallMap({
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
-            {/* Пол зала */}
+            {/* Пол зала - ШИРОКИЙ для десктопа */}
             <div 
-              className="relative rounded-3xl overflow-hidden border border-amber-900/30"
+              className="relative rounded-3xl overflow-hidden border-2 border-amber-800/40"
               style={{
-                width: embedded ? '600px' : '100%',
-                maxWidth: embedded ? '600px' : '400px',
-                aspectRatio: embedded ? '4/3' : '3/4',
+                width: isDesktopView ? '95vw' : (embedded ? '600px' : '100%'),
+                maxWidth: isDesktopView ? '1200px' : (embedded ? '600px' : '400px'),
+                height: isDesktopView ? '70vh' : 'auto',
+                maxHeight: isDesktopView ? '700px' : 'none',
+                aspectRatio: isDesktopView ? 'auto' : (embedded ? '4/3' : '3/4'),
                 background: `
                   repeating-linear-gradient(
                     90deg,
-                    rgba(139, 90, 43, 0.03) 0px,
-                    rgba(100, 60, 30, 0.05) 30px,
-                    rgba(139, 90, 43, 0.03) 60px
+                    rgba(139, 90, 43, 0.04) 0px,
+                    rgba(100, 60, 30, 0.06) 40px,
+                    rgba(139, 90, 43, 0.04) 80px
                   ),
-                  linear-gradient(180deg, rgba(30, 25, 20, 0.9) 0%, rgba(20, 17, 14, 0.95) 100%)
+                  repeating-linear-gradient(
+                    0deg,
+                    rgba(80, 50, 25, 0.03) 0px,
+                    rgba(60, 35, 20, 0.05) 40px,
+                    rgba(80, 50, 25, 0.03) 80px
+                  ),
+                  linear-gradient(135deg, rgba(40, 30, 22, 0.95) 0%, rgba(25, 20, 15, 0.98) 50%, rgba(35, 28, 20, 0.95) 100%)
                 `,
-                boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5), 0 0 60px rgba(180, 130, 80, 0.1)',
+                boxShadow: 'inset 0 0 150px rgba(0,0,0,0.6), 0 0 80px rgba(180, 130, 80, 0.15)',
               }}
             >
               {/* Стены */}
-              <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent">
-                <div className="absolute bottom-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-amber-600/40 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-neutral-900/90 to-transparent">
+                <div className="absolute bottom-0 left-16 right-16 h-px bg-gradient-to-r from-transparent via-amber-600/50 to-transparent" />
+                {/* Декоративные лампы */}
+                {isDesktopView && (
+                  <>
+                    <motion.div 
+                      className="absolute top-4 left-[20%] w-8 h-8 rounded-full bg-amber-500/30 blur-lg"
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    />
+                    <motion.div 
+                      className="absolute top-4 left-[50%] w-10 h-10 rounded-full bg-orange-500/40 blur-lg"
+                      animate={{ opacity: [0.4, 0.7, 0.4] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                    />
+                    <motion.div 
+                      className="absolute top-4 left-[80%] w-8 h-8 rounded-full bg-amber-500/30 blur-lg"
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </>
+                )}
               </div>
+
+              {/* Неоновая надпись LOUNGE */}
+              {isDesktopView && (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2">
+                  <motion.div
+                    className="text-3xl md:text-4xl font-bold tracking-[0.3em]"
+                    style={{
+                      color: '#fbbf24',
+                      textShadow: '0 0 10px #fbbf24, 0 0 20px #f59e0b, 0 0 40px #d97706, 0 0 80px #b45309',
+                    }}
+                    animate={{ 
+                      textShadow: [
+                        '0 0 10px #fbbf24, 0 0 20px #f59e0b, 0 0 40px #d97706, 0 0 60px #b45309',
+                        '0 0 15px #fbbf24, 0 0 30px #f59e0b, 0 0 50px #d97706, 0 0 80px #b45309',
+                        '0 0 10px #fbbf24, 0 0 20px #f59e0b, 0 0 40px #d97706, 0 0 60px #b45309',
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    LOUNGE
+                  </motion.div>
+                </div>
+              )}
 
               {/* Барная зона справа */}
               <div 
-                className="absolute right-2 top-[15%] bottom-[25%] w-10 rounded-2xl flex flex-col items-center justify-center gap-2"
+                className={`absolute right-4 ${isDesktopView ? 'top-[20%] bottom-[15%] w-16' : 'top-[15%] bottom-[25%] w-10'} rounded-2xl flex flex-col items-center justify-center gap-2`}
                 style={{
-                  background: 'linear-gradient(180deg, rgba(180, 130, 80, 0.2) 0%, rgba(140, 100, 60, 0.15) 100%)',
-                  border: '1px solid rgba(180, 130, 80, 0.3)',
+                  background: 'linear-gradient(180deg, rgba(180, 130, 80, 0.25) 0%, rgba(140, 100, 60, 0.2) 100%)',
+                  border: '1px solid rgba(180, 130, 80, 0.4)',
+                  boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3)',
                 }}
               >
-                <Wine size={14} className="text-amber-600/60" />
+                <Wine size={isDesktopView ? 20 : 14} className="text-amber-500/70" />
                 <span 
-                  className="text-[8px] text-amber-600/60 font-bold tracking-widest"
+                  className={`${isDesktopView ? 'text-xs' : 'text-[8px]'} text-amber-500/70 font-bold tracking-widest`}
                   style={{ writingMode: 'vertical-rl' }}
                 >
                   BAR
@@ -196,6 +311,7 @@ export function FullScreenHallMap({
               {tables.map((table) => {
                 const config = tableTypes[table.type] || tableTypes.window;
                 const status = getTableStatus(table.id);
+                const tableSize = getTableSize(table.type);
                 const Icon = config.icon;
                 const isBooked = status === 'booked';
                 const isSelected = status === 'selected';
@@ -207,24 +323,25 @@ export function FullScreenHallMap({
                     style={{
                       left: `${table.x}%`,
                       top: `${table.y}%`,
-                      width: config.size.w,
-                      height: config.size.h,
+                      width: tableSize.w,
+                      height: tableSize.h,
                       transform: 'translate(-50%, -50%)',
                       background: isBooked 
                         ? 'linear-gradient(145deg, #4a1515 0%, #2d0f0f 100%)'
                         : isSelected
-                          ? `linear-gradient(145deg, var(--tw-gradient-stops))`
+                          ? `linear-gradient(145deg, #5a4520 0%, #3d3018 100%)`
                           : 'linear-gradient(145deg, #3d3530 0%, #2a2420 100%)',
-                      border: `2px solid ${
+                      border: `${isDesktopView ? '3px' : '2px'} solid ${
                         isBooked ? '#991b1b' : isSelected ? '#fbbf24' : '#5a4a3a'
                       }`,
                       boxShadow: isSelected 
-                        ? '0 0 30px rgba(251, 191, 36, 0.4), 0 4px 20px rgba(0,0,0,0.3)'
+                        ? '0 0 40px rgba(251, 191, 36, 0.5), 0 6px 25px rgba(0,0,0,0.4)'
                         : '0 4px 15px rgba(0,0,0,0.3)',
                       opacity: isBooked ? 0.7 : 1,
                     }}
                     onClick={() => handleTableClick(table)}
                     whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(251, 191, 36, 0.3)' }}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: table.id * 0.05 }}
@@ -238,7 +355,7 @@ export function FullScreenHallMap({
 
                     {/* Icon */}
                     <Icon 
-                      size={table.type === 'vip' ? 22 : 18} 
+                      size={isDesktopView ? (table.type === 'vip' ? 32 : 26) : (table.type === 'vip' ? 22 : 18)} 
                       className={
                         isBooked ? 'text-red-400/70' : 
                         isSelected ? 'text-white' : 
@@ -247,7 +364,7 @@ export function FullScreenHallMap({
                     />
 
                     {/* Label */}
-                    <span className={`text-[9px] font-bold mt-1 ${
+                    <span className={`${isDesktopView ? 'text-sm' : 'text-[9px]'} font-bold mt-1 ${
                       isBooked ? 'text-red-400/70' : 
                       isSelected ? 'text-white' : 
                       'text-neutral-400'
@@ -255,25 +372,70 @@ export function FullScreenHallMap({
                       {table.label.split(' ')[0]}
                     </span>
 
-                    {/* Seats */}
-                    <div className={`flex items-center gap-0.5 text-[8px] ${
-                      isBooked ? 'text-red-400/60' : 'text-neutral-500'
-                    }`}>
-                      <Users size={8} />
-                      <span>{table.seats}</span>
-                    </div>
+                    {/* Seats или время брони */}
+                    {isBooked ? (
+                      // Время бронирования
+                      (() => {
+                        const booking = getBookingForTable(table.id);
+                        return booking ? (
+                          <div className={`flex items-center gap-1 ${isDesktopView ? 'text-xs' : 'text-[7px]'} text-red-400/80 bg-red-900/40 px-1.5 py-0.5 rounded-full`}>
+                            <Clock size={isDesktopView ? 10 : 7} />
+                            <span>{booking.time}</span>
+                          </div>
+                        ) : null;
+                      })()
+                    ) : (
+                      <div className={`flex items-center gap-1 ${isDesktopView ? 'text-xs' : 'text-[8px]'} ${
+                        isBooked ? 'text-red-400/60' : 'text-neutral-500'
+                      }`}>
+                        <Users size={isDesktopView ? 12 : 8} />
+                        <span>{table.seats}</span>
+                      </div>
+                    )}
+
+                    {/* Человечки для занятых столов */}
+                    {isBooked && isDesktopView && (
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-0.5">
+                        {[...Array(Math.min(3, table.seats))].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 + i * 0.1 }}
+                          >
+                            <div 
+                              className="w-5 h-5 rounded-full bg-red-900/60 border border-red-700/50 flex items-center justify-center"
+                              style={{ marginLeft: i > 0 ? '-4px' : '0' }}
+                            >
+                              <UserCheck size={10} className="text-red-400" />
+                            </div>
+                          </motion.div>
+                        ))}
+                        {table.seats > 3 && (
+                          <motion.div
+                            className="w-5 h-5 rounded-full bg-red-900/80 border border-red-700/50 flex items-center justify-center text-[8px] text-red-300 font-bold"
+                            style={{ marginLeft: '-4px' }}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.8 }}
+                          >
+                            +{table.seats - 3}
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Status indicator */}
-                    <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border-2 border-neutral-900 ${
+                    <div className={`absolute ${isDesktopView ? '-top-2 -right-2 w-6 h-6' : '-top-1 -right-1 w-4 h-4'} rounded-full flex items-center justify-center border-2 border-neutral-900 ${
                       isBooked ? 'bg-red-500' : 
                       isSelected ? 'bg-amber-500' : 
                       'bg-emerald-500'
                     }`}>
-                      {isBooked && <X size={8} className="text-white" strokeWidth={3} />}
-                      {isSelected && <Sparkles size={8} className="text-black" />}
+                      {isBooked && <UserCheck size={isDesktopView ? 12 : 8} className="text-white" />}
+                      {isSelected && <Sparkles size={isDesktopView ? 12 : 8} className="text-black" />}
                       {!isBooked && !isSelected && (
                         <motion.div 
-                          className="w-1.5 h-1.5 bg-white rounded-full"
+                          className={`${isDesktopView ? 'w-2 h-2' : 'w-1.5 h-1.5'} bg-white rounded-full`}
                           animate={{ scale: [1, 1.3, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                         />
@@ -302,44 +464,103 @@ export function FullScreenHallMap({
           </motion.div>
         </div>
 
-        {/* Bottom Panel - Selected Info */}
-        <div className={`absolute bottom-0 left-0 right-0 z-20 ${embedded ? 'p-3' : 'p-4'} bg-gradient-to-t from-black via-black/95 to-transparent`}>
+        {/* Bottom Panel - Premium Design */}
+        <div className={`absolute bottom-0 left-0 right-0 z-20 ${embedded ? 'p-3' : 'p-4 md:p-6'} bg-gradient-to-t from-black via-black/95 to-transparent`}>
+          
+          {/* Selected Table Info Card */}
+          {selectedTableId && !embedded && (
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-900/40 to-orange-900/30 border border-amber-500/30 backdrop-blur-sm"
+            >
+              {(() => {
+                const selectedTable = tables.find(t => t.id === selectedTableId);
+                if (!selectedTable) return null;
+                const typeLabels = { vip: 'VIP Lounge', sofa: 'Диван', window: 'У окна', bar: 'Барная стойка' };
+                const TypeIcon = { vip: Crown, sofa: Sofa, window: Armchair, bar: Wine }[selectedTable.type] || Armchair;
+                
+                return (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                        <TypeIcon size={28} className="text-amber-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">{selectedTable.label}</h3>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-sm text-amber-400">{typeLabels[selectedTable.type]}</span>
+                          <span className="text-neutral-500">•</span>
+                          <span className="text-sm text-neutral-400 flex items-center gap-1">
+                            <Users size={14} />
+                            до {selectedTable.seats} гостей
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {selectedTable.type === 'vip' && (
+                      <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs font-bold">
+                        PREMIUM
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </motion.div>
+          )}
+
           {/* Legend */}
-          <div className={`flex items-center justify-center gap-6 ${embedded ? '' : 'mb-4'}`}>
+          <div className={`flex items-center justify-center gap-4 md:gap-8 ${!embedded && selectedTableId ? '' : 'mb-4'}`}>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs text-neutral-400">Свободен</span>
+              <motion.div 
+                className="w-3 h-3 rounded-full bg-emerald-500"
+                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-xs md:text-sm text-neutral-400">Свободен</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-500" />
-              <span className="text-xs text-neutral-400">Выбран</span>
+              <div className="w-3 h-3 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50" />
+              <span className="text-xs md:text-sm text-neutral-400">Выбран</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span className="text-xs text-neutral-400">Занят</span>
+              <span className="text-xs md:text-sm text-neutral-400">Занят</span>
             </div>
           </div>
 
-          {/* Confirm Button - только для мобильного fullscreen */}
+          {/* Confirm Button - Premium */}
           {!embedded && (
-            <button
+            <motion.button
               onClick={onClose}
               disabled={!selectedTableId}
-              className={`w-full py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
+              className={`w-full mt-4 py-4 md:py-5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${
                 selectedTableId 
-                  ? 'bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-900/30' 
-                  : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-[length:200%_100%] hover:bg-right text-white shadow-xl shadow-amber-900/40' 
+                  : 'bg-neutral-800/80 text-neutral-500 cursor-not-allowed border border-neutral-700'
               }`}
+              animate={selectedTableId ? { backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] } : {}}
+              transition={{ duration: 3, repeat: Infinity }}
+              whileHover={selectedTableId ? { scale: 1.02 } : {}}
+              whileTap={selectedTableId ? { scale: 0.98 } : {}}
             >
               {selectedTableId ? (
                 <>
-                  <Sparkles size={18} />
-                  Подтвердить выбор
+                  <Sparkles size={22} className="animate-pulse" />
+                  Забронировать столик
                 </>
               ) : (
-                'Выберите столик'
+                <span className="flex items-center gap-2">
+                  <motion.span
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    👆
+                  </motion.span>
+                  Выберите столик на схеме
+                </span>
               )}
-            </button>
+            </motion.button>
           )}
         </div>
       </motion.div>
