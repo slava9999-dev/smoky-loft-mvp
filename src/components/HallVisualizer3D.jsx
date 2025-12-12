@@ -1,11 +1,48 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { businessConfig } from '../config/business';
 import { getBookingsForDate } from '../services/bookingService';
 import { 
   Crown, Sofa, Armchair, Wine, Users, Clock, Calendar, X, Sparkles,
-  Zap, Star, ChevronLeft, ChevronRight, Eye, Volume2, VolumeX
+  Zap, Star, ChevronLeft, ChevronRight, Eye, Volume2, VolumeX,
+  MapPin, Check, Info, ChevronDown, Maximize2
 } from 'lucide-react';
+
+// =============================================================================
+// 📱 ХУК ДЛЯ ОПРЕДЕЛЕНИЯ МОБИЛЬНОГО УСТРОЙСТВА
+// =============================================================================
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [breakpoint]);
+  
+  return isMobile;
+}
+
+// =============================================================================
+// 📱 МОБИЛЬНЫЕ ДИЗАЙН-ТОКЕНЫ
+// =============================================================================
+const MOBILE_DESIGN = {
+  zones: [
+    { id: 'vip', name: 'VIP Lounge', icon: Crown, color: 'amber', premium: true },
+    { id: 'sofa', name: 'Диванная', icon: Sofa, color: 'orange' },
+    { id: 'window', name: 'У окна', icon: Armchair, color: 'emerald' },
+    { id: 'bar', name: 'Бар', icon: Wine, color: 'rose' },
+  ],
+  statusColors: {
+    free: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/40', text: 'text-emerald-400', dot: 'bg-emerald-500' },
+    selected: { bg: 'bg-amber-500/20', border: 'border-amber-500', text: 'text-amber-400', dot: 'bg-amber-500' },
+    booked: { bg: 'bg-red-500/20', border: 'border-red-500/40', text: 'text-red-400', dot: 'bg-red-500' },
+  }
+};
 
 // =============================================================================
 // 🎨 ДИЗАЙН-ТОКЕНЫ ДЛЯ ИЗОМЕТРИЧЕСКОГО ЗАЛА
@@ -649,9 +686,392 @@ function SmartTooltip({ table, isBooked, bookingInfo, position }) {
 }
 
 // =============================================================================
-// 🏠 ГЛАВНЫЙ КОМПОНЕНТ - ВИЗУАЛИЗАТОР ЗАЛА 3D
+// 📱 МОБИЛЬНАЯ КАРТОЧКА СТОЛА
 // =============================================================================
-export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate, selectedTime }) {
+function MobileTableCard({ table, isSelected, isBooked, onClick, bookingInfo }) {
+  const getTypeInfo = (type) => {
+    const info = {
+      vip: { icon: Crown, label: 'VIP Зона', color: 'amber', premium: true },
+      sofa: { icon: Sofa, label: 'Диван', color: 'orange' },
+      window: { icon: Armchair, label: 'У окна', color: 'emerald' },
+      bar: { icon: Wine, label: 'Бар', color: 'rose' },
+    };
+    return info[type] || info.window;
+  };
+
+  const typeInfo = getTypeInfo(table.type);
+  const Icon = typeInfo.icon;
+  const status = isBooked ? 'booked' : isSelected ? 'selected' : 'free';
+  const statusStyle = MOBILE_DESIGN.statusColors[status];
+
+  return (
+    <motion.button
+      className={`
+        relative w-full p-4 rounded-2xl border-2 transition-all
+        ${statusStyle.bg} ${statusStyle.border}
+        ${isBooked ? 'opacity-60 cursor-not-allowed' : 'active:scale-[0.98]'}
+      `}
+      onClick={() => !isBooked && onClick(table.id)}
+      whileTap={!isBooked ? { scale: 0.98 } : {}}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Premium badge */}
+      {typeInfo.premium && (
+        <div className="absolute -top-2 right-4 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full">
+          <span className="text-[10px] font-bold text-black">VIP</span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-4">
+        {/* Icon */}
+        <div className={`
+          w-14 h-14 rounded-xl flex items-center justify-center
+          bg-gradient-to-br from-${typeInfo.color}-900/50 to-${typeInfo.color}-950/50
+          border border-${typeInfo.color}-700/30
+        `}>
+          <Icon size={28} className={statusStyle.text} />
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 text-left">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-white text-lg">{table.label}</h3>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
+              {typeInfo.label}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-neutral-400">
+            <span className="flex items-center gap-1">
+              <Users size={14} />
+              {table.seats} мест
+            </span>
+            <span className="flex items-center gap-1">
+              💰 от {table.minOrder}₽
+            </span>
+          </div>
+
+          {/* Features */}
+          {table.features && (
+            <div className="flex gap-1 mt-2 flex-wrap">
+              {table.features.slice(0, 3).map((f, i) => (
+                <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-800/50 text-neutral-400">
+                  {f === 'ps5' ? '🎮 PS5' : 
+                   f === 'view' ? '🪟 Вид' :
+                   f === 'comfort' ? '🛋️ Комфорт' :
+                   f === 'premium' ? '✨ Premium' :
+                   f === 'private' ? '🔒 Приватно' :
+                   f === 'hookah_included' ? '💨 Кальян' : f}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Status indicator */}
+        <div className="flex flex-col items-center gap-1">
+          <div className={`w-4 h-4 rounded-full ${statusStyle.dot} ${!isBooked && 'animate-pulse'}`} />
+          <span className={`text-[10px] font-medium ${statusStyle.text}`}>
+            {isBooked ? 'Занят' : isSelected ? 'Выбран' : 'Свободен'}
+          </span>
+        </div>
+      </div>
+
+      {/* Booking info if booked */}
+      {isBooked && bookingInfo && (
+        <div className="mt-3 pt-3 border-t border-red-500/20 flex items-center gap-2 text-sm text-red-400">
+          <Clock size={14} />
+          <span>Забронировано на {bookingInfo.time}</span>
+        </div>
+      )}
+
+      {/* Selection checkmark */}
+      {isSelected && (
+        <motion.div
+          className="absolute top-4 right-4 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring' }}
+        >
+          <Check size={14} className="text-black" strokeWidth={3} />
+        </motion.div>
+      )}
+    </motion.button>
+  );
+}
+
+// =============================================================================
+// 📱 МИНИ-КАРТА ЗАЛА (МОБИЛЬНАЯ)
+// =============================================================================
+function MobileMiniMap({ tables, selectedTableId, bookedTableIds, onSelectTable }) {
+  return (
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-900/80 border border-neutral-700/50">
+      {/* Фон карты */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at 50% 0%, rgba(255, 150, 50, 0.05) 0%, transparent 50%),
+            linear-gradient(180deg, #1a1614 0%, #0d0b09 100%)
+          `
+        }}
+      />
+
+      {/* Зоны */}
+      <div className="absolute top-2 left-2 right-2 h-6 bg-gradient-to-b from-neutral-800/50 to-transparent rounded-t-xl" />
+      <div className="absolute right-2 top-8 bottom-16 w-6 bg-gradient-to-l from-amber-900/20 to-transparent rounded-r-xl flex items-center justify-center">
+        <Wine size={12} className="text-amber-600/40" />
+      </div>
+
+      {/* Столы на мини-карте */}
+      {tables.map((table) => {
+        const isBooked = bookedTableIds.includes(table.id);
+        const isSelected = selectedTableId === table.id;
+        
+        return (
+          <motion.button
+            key={table.id}
+            className={`
+              absolute rounded-lg flex items-center justify-center transition-all
+              ${isBooked ? 'bg-red-500/40' : isSelected ? 'bg-amber-500' : 'bg-emerald-500/50'}
+              ${!isBooked && 'active:scale-125'}
+            `}
+            style={{
+              left: `${table.x}%`,
+              top: `${table.y}%`,
+              width: table.type === 'vip' ? 32 : table.type === 'bar' ? 16 : 24,
+              height: table.type === 'vip' ? 20 : table.type === 'bar' ? 24 : 16,
+              transform: 'translate(-50%, -50%)',
+            }}
+            onClick={() => !isBooked && onSelectTable(table.id)}
+            whileTap={{ scale: 1.2 }}
+          >
+            <span className="text-[8px] font-bold text-white drop-shadow-lg">
+              {table.id}
+            </span>
+          </motion.button>
+        );
+      })}
+
+      {/* Вход */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] text-neutral-500 font-bold tracking-wider">
+        ВХОД
+      </div>
+
+      {/* Легенда */}
+      <div className="absolute top-2 right-2 flex gap-2">
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-[8px] text-neutral-500">Своб.</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-red-500" />
+          <span className="text-[8px] text-neutral-500">Занят</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// 📱 ФИЛЬТР ЗОН (МОБИЛЬНЫЙ)
+// =============================================================================
+function MobileZoneFilter({ activeZone, onZoneChange, tables, bookedTableIds }) {
+  const getZoneStats = (zoneId) => {
+    const zoneTables = tables.filter(t => t.type === zoneId);
+    const freeCount = zoneTables.filter(t => !bookedTableIds.includes(t.id)).length;
+    return { total: zoneTables.length, free: freeCount };
+  };
+
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+      {/* All */}
+      <motion.button
+        className={`
+          flex-shrink-0 px-4 py-2 rounded-xl border transition-all flex items-center gap-2
+          ${activeZone === null 
+            ? 'bg-amber-500/20 border-amber-500 text-amber-400' 
+            : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'}
+        `}
+        onClick={() => onZoneChange(null)}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Sparkles size={14} />
+        <span className="text-sm font-medium">Все</span>
+      </motion.button>
+
+      {MOBILE_DESIGN.zones.map((zone) => {
+        const stats = getZoneStats(zone.id);
+        const isActive = activeZone === zone.id;
+        const Icon = zone.icon;
+
+        return (
+          <motion.button
+            key={zone.id}
+            className={`
+              flex-shrink-0 px-4 py-2 rounded-xl border transition-all flex items-center gap-2
+              ${isActive 
+                ? `bg-${zone.color}-500/20 border-${zone.color}-500 text-${zone.color}-400` 
+                : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'}
+            `}
+            onClick={() => onZoneChange(zone.id)}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Icon size={14} />
+            <span className="text-sm font-medium">{zone.name}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              stats.free > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+            }`}>
+              {stats.free}/{stats.total}
+            </span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// =============================================================================
+// 📱 ГЛАВНЫЙ МОБИЛЬНЫЙ КОМПОНЕНТ
+// =============================================================================
+function HallVisualizerMobile({ selectedTableId, onSelectTable, selectedDate, selectedTime }) {
+  const { hall } = businessConfig;
+  const [bookings, setBookings] = useState([]);
+  const [activeZone, setActiveZone] = useState(null);
+  const [showMiniMap, setShowMiniMap] = useState(false);
+
+  // Загружаем бронирования
+  useEffect(() => {
+    const dateBookings = getBookingsForDate(selectedDate || 'Сегодня');
+    setBookings(dateBookings);
+  }, [selectedDate]);
+
+  const bookedTableIds = useMemo(() => 
+    bookings.map(b => b.tableId), 
+    [bookings]
+  );
+
+  const filteredTables = useMemo(() => {
+    if (!activeZone) return hall.tables;
+    return hall.tables.filter(t => t.type === activeZone);
+  }, [hall.tables, activeZone]);
+
+  const getBookingInfo = (tableId) => {
+    return bookings.find(b => b.tableId === tableId);
+  };
+
+  // Статистика
+  const stats = useMemo(() => {
+    const free = hall.tables.filter(t => !bookedTableIds.includes(t.id)).length;
+    return { total: hall.tables.length, free };
+  }, [hall.tables, bookedTableIds]);
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Header с мини-картой */}
+      <div className="relative">
+        {/* Title & Stats */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <MapPin size={20} className="text-amber-500" />
+              Выбор столика
+            </h2>
+            <p className="text-sm text-neutral-400 mt-0.5">
+              Свободно {stats.free} из {stats.total}
+            </p>
+          </div>
+          
+          <motion.button
+            className="p-3 rounded-xl bg-neutral-800/80 border border-neutral-700/50 text-neutral-400"
+            onClick={() => setShowMiniMap(!showMiniMap)}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Maximize2 size={18} className={showMiniMap ? 'text-amber-400' : ''} />
+          </motion.button>
+        </div>
+
+        {/* Mini-map (expandable) */}
+        <AnimatePresence>
+          {showMiniMap && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden mb-4"
+            >
+              <MobileMiniMap
+                tables={hall.tables}
+                selectedTableId={selectedTableId}
+                bookedTableIds={bookedTableIds}
+                onSelectTable={onSelectTable}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Zone Filter */}
+      <MobileZoneFilter
+        activeZone={activeZone}
+        onZoneChange={setActiveZone}
+        tables={hall.tables}
+        bookedTableIds={bookedTableIds}
+      />
+
+      {/* Tables List */}
+      <div className="space-y-3">
+        {filteredTables.length === 0 ? (
+          <div className="text-center py-8 text-neutral-500">
+            <Info size={32} className="mx-auto mb-2 opacity-50" />
+            <p>Нет столов в этой зоне</p>
+          </div>
+        ) : (
+          filteredTables.map((table, index) => (
+            <motion.div
+              key={table.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <MobileTableCard
+                table={table}
+                isSelected={selectedTableId === table.id}
+                isBooked={bookedTableIds.includes(table.id)}
+                onClick={onSelectTable}
+                bookingInfo={getBookingInfo(table.id)}
+              />
+            </motion.div>
+          ))
+        )}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 py-4 border-t border-neutral-800/50">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs text-neutral-400">Свободен</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-amber-500" />
+          <span className="text-xs text-neutral-400">Выбран</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500" />
+          <span className="text-xs text-neutral-400">Занят</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// 🏠 ГЛАВНЫЙ КОМПОНЕНТ - ВИЗУАЛИЗАТОР ЗАЛА 3D (DESKTOP)
+// =============================================================================
+function HallVisualizer3DDesktop({ selectedTableId, onSelectTable, selectedDate, selectedTime }) {
   const { hall } = businessConfig;
   const [bookings, setBookings] = useState([]);
   const [hoveredTable, setHoveredTable] = useState(null);
@@ -890,4 +1310,17 @@ export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate,
       </motion.button>
     </div>
   );
+}
+
+// =============================================================================
+// 🔄 АДАПТИВНАЯ ОБЁРТКА - АВТОПЕРЕКЛЮЧЕНИЕ DESKTOP/MOBILE
+// =============================================================================
+export function HallVisualizer3D(props) {
+  const isMobile = useIsMobile(768);
+  
+  if (isMobile) {
+    return <HallVisualizerMobile {...props} />;
+  }
+  
+  return <HallVisualizer3DDesktop {...props} />;
 }

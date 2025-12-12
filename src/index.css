@@ -26,3 +26,24 @@ h1, h2, h3 {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Скрытие скроллбара для горизонтальных списков */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Плавные тапы на мобильных */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button, a {
+    touch-action: manipulation;
+  }
+}
