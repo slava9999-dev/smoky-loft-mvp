@@ -1354,7 +1354,7 @@ export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate,
     );
   }
   
-  // На десктопе - сразу полноэкранная схема
+  // На десктопе - полноэкранная схема
   return (
     <FullScreenHallMap
       isOpen={true}
@@ -1363,7 +1363,7 @@ export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate,
       selectedTableId={selectedTableId}
       bookedTableIds={bookedTableIds}
       onSelectTable={onSelectTable}
-      embedded={true}
+      embedded={false}
     />
   );
 }
