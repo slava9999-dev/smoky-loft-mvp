@@ -59,16 +59,34 @@ export const businessConfig = {
   ],
   
   // Hall Configuration for Visualization
+  // Координаты в процентах от размера контейнера
   hall: {
     width: 800,
     height: 600,
     tables: [
-      { id: 1, label: "Стол 1", x: 10, y: 10, type: "window", seats: 4 },
-      { id: 2, label: "Стол 2", x: 60, y: 10, type: "window", seats: 4 },
-      { id: 3, label: "Стол 3", x: 10, y: 50, type: "sofa", seats: 6 },
-      { id: 4, label: "Стол 4", x: 60, y: 50, type: "sofa", seats: 6 },
-      { id: 5, label: "VIP", x: 35, y: 80, type: "vip", seats: 8 },
-      { id: 6, label: "Bar", x: 90, y: 40, type: "bar", seats: 2 }
-    ]
+      // Зона у окна (левая стена) - уютные столики для пар и небольших компаний
+      { id: 1, label: "Окно 1", x: 15, y: 25, type: "window", seats: 2, minOrder: 1500, features: ["view", "cozy"] },
+      { id: 2, label: "Окно 2", x: 15, y: 48, type: "window", seats: 4, minOrder: 2000, features: ["view", "cozy"] },
+      
+      // Центральная зона - диванная (большие компании)
+      { id: 3, label: "Диван 1", x: 35, y: 30, type: "sofa", seats: 6, minOrder: 3000, features: ["comfort", "spacious"] },
+      { id: 4, label: "Диван 2", x: 60, y: 30, type: "sofa", seats: 6, minOrder: 3000, features: ["comfort", "spacious"] },
+      { id: 5, label: "Диван 3", x: 35, y: 55, type: "sofa", seats: 5, minOrder: 2500, features: ["comfort"] },
+      { id: 6, label: "Диван 4", x: 60, y: 55, type: "sofa", seats: 5, minOrder: 2500, features: ["comfort"] },
+      
+      // VIP зона (приватная) - внизу по центру
+      { id: 7, label: "VIP Lounge", x: 47, y: 80, type: "vip", seats: 10, minOrder: 5000, features: ["private", "ps5", "premium", "hookah_included"] },
+      
+      // Барная стойка (быстрые встречи, одиночки)
+      { id: 8, label: "Бар 1", x: 82, y: 30, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
+      { id: 9, label: "Бар 2", x: 82, y: 50, type: "bar", seats: 2, minOrder: 1000, features: ["quick", "social"] },
+    ],
+    // Зоны зала
+    zones: {
+      window: { name: "У окна", description: "Уютные столики с видом", avgPrice: 1500 },
+      sofa: { name: "Диванная зона", description: "Мягкие диваны для компаний", avgPrice: 2500 },
+      vip: { name: "VIP Lounge", description: "Приватная комната с PS5", avgPrice: 5000 },
+      bar: { name: "Барная стойка", description: "Быстрый формат у бара", avgPrice: 1000 },
+    }
   }
 };
