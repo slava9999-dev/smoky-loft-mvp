@@ -112,6 +112,7 @@ function App() {
         onClose={() => setIsModalOpen(false)} 
         cart={cart} 
         clearCart={() => setCart([])}
+        onBookingSuccess={() => showNotification("Заявка сформирована! Переход в Telegram...", "success")}
       />
 
       <Toast 

@@ -56,5 +56,19 @@ export const businessConfig = {
       description: "Отдельная комната, большой экран, приставка. Цена за час.",
       image: "/images/vip-room.webp"
     }
-  ]
+  ],
+  
+  // Hall Configuration for Visualization
+  hall: {
+    width: 800,
+    height: 600,
+    tables: [
+      { id: 1, label: "Стол 1", x: 10, y: 10, type: "window", seats: 4 },
+      { id: 2, label: "Стол 2", x: 60, y: 10, type: "window", seats: 4 },
+      { id: 3, label: "Стол 3", x: 10, y: 50, type: "sofa", seats: 6 },
+      { id: 4, label: "Стол 4", x: 60, y: 50, type: "sofa", seats: 6 },
+      { id: 5, label: "VIP", x: 35, y: 80, type: "vip", seats: 8 },
+      { id: 6, label: "Bar", x: 90, y: 40, type: "bar", seats: 2 }
+    ]
+  }
 };
