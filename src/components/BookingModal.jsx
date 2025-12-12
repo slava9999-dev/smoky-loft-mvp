@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Calendar, User, Armchair, Clock, ArrowLeft, ArrowRight, Sparkles, Users, Crown } from 'lucide-react';
 import { businessConfig } from '../config/business';
 import { HallVisualizer3D } from './HallVisualizer3D';
-import { addBooking, seedDemoBookings, clearBookings } from '../services/bookingService';
+import { addBooking } from '../services/bookingService';
 
 export function BookingModal({ isOpen, onClose, cart, clearCart, onBookingSuccess }) {
   const [step, setStep] = useState(1);
@@ -13,11 +13,6 @@ export function BookingModal({ isOpen, onClose, cart, clearCart, onBookingSucces
   const [contact, setContact] = useState({ name: '', phone: '' });
   
   const { theme, hall } = businessConfig;
-
-  // Seed demo bookings on first load
-  useEffect(() => {
-    seedDemoBookings();
-  }, []);
 
   // Reset state when opening
   useEffect(() => {

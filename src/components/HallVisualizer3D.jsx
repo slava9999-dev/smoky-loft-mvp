@@ -1329,12 +1329,41 @@ function HallVisualizer3DDesktop({ selectedTableId, onSelectTable, selectedDate,
 // =============================================================================
 // 🔄 АДАПТИВНАЯ ОБЁРТКА - АВТОПЕРЕКЛЮЧЕНИЕ DESKTOP/MOBILE
 // =============================================================================
-export function HallVisualizer3D(props) {
+export function HallVisualizer3D({ selectedTableId, onSelectTable, selectedDate, selectedTime }) {
   const isMobile = useIsMobile(768);
+  const { hall } = businessConfig;
+  const [bookings, setBookings] = useState([]);
   
+  // Загружаем бронирования
+  useEffect(() => {
+    const dateBookings = getBookingsForDate(selectedDate || 'Сегодня');
+    setBookings(dateBookings);
+  }, [selectedDate]);
+  
+  const bookedTableIds = bookings.map(b => b.tableId);
+  
+  // На мобильных - карточки + кнопка для полноэкранной схемы
   if (isMobile) {
-    return <HallVisualizerMobile {...props} />;
+    return (
+      <HallVisualizerMobile 
+        selectedTableId={selectedTableId}
+        onSelectTable={onSelectTable}
+        selectedDate={selectedDate}
+        selectedTime={selectedTime}
+      />
+    );
   }
   
-  return <HallVisualizer3DDesktop {...props} />;
+  // На десктопе - сразу полноэкранная схема
+  return (
+    <FullScreenHallMap
+      isOpen={true}
+      onClose={() => {}}
+      tables={hall.tables}
+      selectedTableId={selectedTableId}
+      bookedTableIds={bookedTableIds}
+      onSelectTable={onSelectTable}
+      embedded={true}
+    />
+  );
 }

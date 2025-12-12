@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { businessConfig } from './config/business';
 import { ServiceCard } from './components/ServiceCard';
 import { BookingModal } from './components/BookingModal';
@@ -8,6 +8,7 @@ import { WifiCard } from './components/WifiCard';
 import { Footer } from './components/Footer';
 import { ShoppingBag, CalendarDays } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { seedDemoBookings } from './services/bookingService';
 
 function App() {
   const [cart, setCart] = useState(() => {
@@ -19,8 +20,13 @@ function App() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const { theme, hero, services, loyalty } = businessConfig;
 
+  // Seed demo bookings ОДИН РАЗ при старте приложения
+  useEffect(() => {
+    seedDemoBookings();
+  }, []);
+
   // Persist cart
-  useState(() => {
+  useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 

@@ -7,7 +7,7 @@ import {
 import { businessConfig } from '../config/business';
 
 // =============================================================================
-// 🗺️ ПОЛНОЭКРАННАЯ КРАСИВАЯ СХЕМА ЗАЛА
+// 🗺️ ПОЛНОЭКРАННАЯ/ВСТРАИВАЕМАЯ КРАСИВАЯ СХЕМА ЗАЛА
 // =============================================================================
 export function FullScreenHallMap({ 
   isOpen, 
@@ -15,7 +15,8 @@ export function FullScreenHallMap({
   tables, 
   selectedTableId, 
   bookedTableIds = [],
-  onSelectTable 
+  onSelectTable,
+  embedded = false // Новый prop для встраивания
 }) {
   const [zoom, setZoom] = useState(1);
   const [selectedInfo, setSelectedInfo] = useState(null);
@@ -28,28 +29,28 @@ export function FullScreenHallMap({
       icon: Crown, 
       color: 'amber',
       gradient: 'from-amber-600 to-yellow-500',
-      size: { w: 90, h: 55 },
+      size: { w: embedded ? 110 : 90, h: embedded ? 70 : 55 },
       label: 'VIP Lounge'
     },
     sofa: { 
       icon: Sofa, 
       color: 'orange',
       gradient: 'from-orange-600 to-orange-500',
-      size: { w: 70, h: 45 },
+      size: { w: embedded ? 90 : 70, h: embedded ? 55 : 45 },
       label: 'Диван'
     },
     window: { 
       icon: Armchair, 
       color: 'emerald',
       gradient: 'from-emerald-600 to-emerald-500',
-      size: { w: 55, h: 55 },
+      size: { w: embedded ? 70 : 55, h: embedded ? 70 : 55 },
       label: 'У окна'
     },
     bar: { 
       icon: Wine, 
       color: 'rose',
       gradient: 'from-rose-600 to-pink-500',
-      size: { w: 35, h: 60 },
+      size: { w: embedded ? 45 : 35, h: embedded ? 75 : 60 },
       label: 'Бар'
     },
   };
@@ -71,13 +72,18 @@ export function FullScreenHallMap({
 
   if (!isOpen) return null;
 
+  // Контейнер: fixed для мобильных, relative для embedded
+  const containerClass = embedded 
+    ? "relative w-full h-[500px] rounded-2xl overflow-hidden"
+    : "fixed inset-0 z-[100]";
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black"
+        className={`${containerClass} bg-black`}
       >
         {/* Фон с градиентом */}
         <div 
@@ -91,25 +97,27 @@ export function FullScreenHallMap({
           }}
         />
 
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-              <MapPin size={20} className="text-amber-400" />
+        {/* Header - только для мобильного fullscreen */}
+        {!embedded && (
+          <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <MapPin size={20} className="text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Схема зала</h2>
+                <p className="text-xs text-neutral-400">Нажмите на столик для выбора</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Схема зала</h2>
-              <p className="text-xs text-neutral-400">Нажмите на столик для выбора</p>
-            </div>
+            
+            <button
+              onClick={onClose}
+              className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white"
+            >
+              <X size={20} />
+            </button>
           </div>
-          
-          <button
-            onClick={onClose}
-            className="p-3 rounded-xl bg-neutral-800/80 backdrop-blur-sm border border-neutral-700 text-white"
-          >
-            <X size={20} />
-          </button>
-        </div>
+        )}
 
         {/* Zoom Controls */}
         <div className="absolute bottom-24 right-4 z-20 flex flex-col gap-2">
@@ -134,22 +142,22 @@ export function FullScreenHallMap({
         </div>
 
         {/* Main Hall Map */}
-        <div className="absolute inset-0 pt-20 pb-32 px-4 overflow-auto">
+        <div className={`absolute inset-0 ${embedded ? 'pt-4 pb-20 px-4' : 'pt-20 pb-32 px-4'} overflow-auto`}>
           <motion.div
-            className="relative w-full min-h-full"
+            className="relative w-full h-full flex items-center justify-center"
             style={{ 
               transform: `scale(${zoom})`,
-              transformOrigin: 'center top',
+              transformOrigin: 'center center',
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {/* Пол зала */}
             <div 
-              className="relative mx-auto rounded-3xl overflow-hidden border border-amber-900/30"
+              className="relative rounded-3xl overflow-hidden border border-amber-900/30"
               style={{
-                width: '100%',
-                maxWidth: '400px',
-                aspectRatio: '3/4',
+                width: embedded ? '600px' : '100%',
+                maxWidth: embedded ? '600px' : '400px',
+                aspectRatio: embedded ? '4/3' : '3/4',
                 background: `
                   repeating-linear-gradient(
                     90deg,
@@ -295,9 +303,9 @@ export function FullScreenHallMap({
         </div>
 
         {/* Bottom Panel - Selected Info */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black via-black/95 to-transparent">
+        <div className={`absolute bottom-0 left-0 right-0 z-20 ${embedded ? 'p-3' : 'p-4'} bg-gradient-to-t from-black via-black/95 to-transparent`}>
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mb-4">
+          <div className={`flex items-center justify-center gap-6 ${embedded ? '' : 'mb-4'}`}>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-neutral-400">Свободен</span>
@@ -312,25 +320,27 @@ export function FullScreenHallMap({
             </div>
           </div>
 
-          {/* Confirm Button */}
-          <button
-            onClick={onClose}
-            disabled={!selectedTableId}
-            className={`w-full py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
-              selectedTableId 
-                ? 'bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-900/30' 
-                : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
-            }`}
-          >
-            {selectedTableId ? (
-              <>
-                <Sparkles size={18} />
-                Подтвердить выбор
-              </>
-            ) : (
-              'Выберите столик'
-            )}
-          </button>
+          {/* Confirm Button - только для мобильного fullscreen */}
+          {!embedded && (
+            <button
+              onClick={onClose}
+              disabled={!selectedTableId}
+              className={`w-full py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
+                selectedTableId 
+                  ? 'bg-amber-600 hover:bg-amber-500 shadow-lg shadow-amber-900/30' 
+                  : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+              }`}
+            >
+              {selectedTableId ? (
+                <>
+                  <Sparkles size={18} />
+                  Подтвердить выбор
+                </>
+              ) : (
+                'Выберите столик'
+              )}
+            </button>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>

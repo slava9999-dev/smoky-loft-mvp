@@ -14,16 +14,21 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
   const [bookings, setBookings] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { hall, theme } = businessConfig;
 
-  // Загрузка бронирований
+  // Загрузка бронирований - при каждом открытии
   useEffect(() => {
     if (isOpen) {
+      console.log('MyBookings открыт, загружаем данные...');
       const active = getActiveBookings();
+      console.log('Загружено бронирований:', active.length, active);
       setBookings(active);
+      setConfirmDelete(null);
+      setIsDeleting(false);
     }
-  }, [isOpen]);
+  }, [isOpen, refreshKey]);
 
   // Получение инфо о столе
   const getTableInfo = (tableId) => {
@@ -49,12 +54,13 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
         const success = cancelBooking(bookingId);
         console.log('cancelBooking вернул:', success);
         
-        if (success) {
-          setBookings(prev => prev.filter(b => b.id !== bookingId));
-          if (onCancelSuccess) onCancelSuccess();
-        } else {
-          // Даже если не нашли - убираем из UI (возможно уже удалено)
-          setBookings(prev => prev.filter(b => String(b.id) !== String(bookingId)));
+        // Перезагружаем данные из localStorage напрямую
+        const updatedBookings = getActiveBookings();
+        console.log('Обновлённые бронирования:', updatedBookings.length);
+        setBookings(updatedBookings);
+        
+        if (success && onCancelSuccess) {
+          onCancelSuccess();
         }
       } catch (error) {
         console.error('Ошибка отмены брони:', error);
@@ -181,7 +187,6 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
                           <button
                             type="button"
                             onClick={() => setConfirmDelete(booking.id)}
-                            onTouchEnd={(e) => { e.preventDefault(); setConfirmDelete(booking.id); }}
                             className="w-full py-2.5 px-4 rounded-xl bg-neutral-700/50 hover:bg-red-900/30 border border-transparent hover:border-red-500/30 text-neutral-400 hover:text-red-400 transition-all flex items-center justify-center gap-2 text-sm font-medium active:bg-red-900/30"
                           >
                             <Trash2 size={16} />
@@ -201,7 +206,6 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
                               <button
                                 type="button"
                                 onClick={() => setConfirmDelete(null)}
-                                onTouchEnd={(e) => { e.preventDefault(); setConfirmDelete(null); }}
                                 disabled={isDeleting}
                                 className="flex-1 py-2.5 rounded-xl bg-neutral-700 text-white font-medium hover:bg-neutral-600 transition-colors active:bg-neutral-600"
                               >
@@ -210,7 +214,6 @@ export function MyBookings({ isOpen, onClose, onCancelSuccess }) {
                               <button
                                 type="button"
                                 onClick={() => handleCancel(booking.id)}
-                                onTouchEnd={(e) => { e.preventDefault(); if (!isDeleting) handleCancel(booking.id); }}
                                 disabled={isDeleting}
                                 className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-500 transition-colors flex items-center justify-center gap-2 active:bg-red-500"
                               >
