@@ -30,7 +30,7 @@ export function FullScreenHallMap({
   const { hall } = businessConfig;
 
   // Размеры для десктопа - широкая схема
-  const isDesktopView = !embedded && typeof window !== 'undefined' && window.innerWidth >= 768;
+  const isDesktopView = typeof window !== 'undefined' && window.innerWidth >= 768;
 
   // Типы столов с настройками
   const getTableSize = (type) => {
@@ -471,7 +471,7 @@ export function FullScreenHallMap({
         <div className={`absolute bottom-0 left-0 right-0 z-20 ${embedded ? 'p-3' : 'p-4 md:p-6'} bg-gradient-to-t from-black via-black/95 to-transparent`}>
           
           {/* Selected Table Info Card */}
-          {selectedTableId && !embedded && (
+          {selectedTableId && (
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
