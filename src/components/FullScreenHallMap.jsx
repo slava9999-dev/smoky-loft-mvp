@@ -112,53 +112,56 @@ export function FullScreenHallMap({
         exit={{ opacity: 0 }}
         className={`${containerClass} bg-black overflow-hidden`}
       >
-        {/* Premium Background с атмосферой */}
+        {/* Premium Background с УСИЛЕННОЙ атмосферой */}
         <div 
           className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse at 20% 30%, rgba(180, 120, 60, 0.2) 0%, transparent 40%),
-              radial-gradient(ellipse at 80% 20%, rgba(255, 150, 50, 0.15) 0%, transparent 35%),
-              radial-gradient(ellipse at 50% 80%, rgba(200, 100, 50, 0.1) 0%, transparent 50%),
-              radial-gradient(ellipse at 10% 90%, rgba(150, 80, 40, 0.15) 0%, transparent 40%),
-              linear-gradient(180deg, #0a0908 0%, #151210 30%, #1a1614 60%, #0d0b09 100%)
+              radial-gradient(ellipse at 20% 30%, rgba(220, 150, 80, 0.35) 0%, transparent 40%),
+              radial-gradient(ellipse at 80% 20%, rgba(255, 180, 80, 0.25) 0%, transparent 35%),
+              radial-gradient(ellipse at 50% 80%, rgba(250, 140, 70, 0.20) 0%, transparent 50%),
+              radial-gradient(ellipse at 10% 90%, rgba(200, 120, 60, 0.25) 0%, transparent 40%),
+              radial-gradient(ellipse at 90% 70%, rgba(255, 160, 50, 0.15) 0%, transparent 45%),
+              linear-gradient(180deg, #1a1210 0%, #251a14 30%, #2a1e18 60%, #1a1410 100%)
             `
           }}
         />
 
-        {/* Animated Smoke Particles */}
+        {/* Усиленные частицы дыма - больше и ярче */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute rounded-full opacity-20"
+              className="absolute rounded-full"
               style={{
-                width: `${100 + i * 50}px`,
-                height: `${100 + i * 50}px`,
-                left: `${10 + i * 12}%`,
-                top: `${20 + (i % 3) * 25}%`,
-                background: `radial-gradient(circle, rgba(200, 150, 100, 0.3) 0%, transparent 70%)`,
-                filter: 'blur(40px)',
+                width: `${120 + i * 60}px`,
+                height: `${120 + i * 60}px`,
+                left: `${5 + i * 9}%`,
+                top: `${15 + (i % 4) * 22}%`,
+                background: `radial-gradient(circle, rgba(255, 180, 100, 0.4) 0%, rgba(220, 150, 80, 0.2) 40%, transparent 70%)`,
+                filter: 'blur(50px)',
               }}
               animate={{
-                y: [0, -30, 0],
-                x: [0, i % 2 === 0 ? 20 : -20, 0],
-                scale: [1, 1.2, 1],
-                opacity: [0.15, 0.25, 0.15],
+                y: [0, -40, 0],
+                x: [0, i % 2 === 0 ? 25 : -25, 0],
+                scale: [1, 1.3, 1],
+                opacity: [0.25, 0.45, 0.25],
               }}
               transition={{
-                duration: 8 + i * 2,
+                duration: 7 + i * 1.5,
                 repeat: Infinity,
-                delay: i * 0.5,
+                delay: i * 0.4,
               }}
             />
           ))}
         </div>
 
-        {/* Decorative Elements */}
-        <div className="absolute top-10 left-10 w-4 h-4 rounded-full bg-amber-500/30 blur-sm animate-pulse" />
-        <div className="absolute top-20 right-20 w-3 h-3 rounded-full bg-orange-500/40 blur-sm animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute bottom-40 left-20 w-5 h-5 rounded-full bg-amber-600/20 blur-md animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Больше декоративных огоньков */}
+        <div className="absolute top-10 left-10 w-6 h-6 rounded-full bg-amber-500/40 blur-md animate-pulse" />
+        <div className="absolute top-20 right-20 w-5 h-5 rounded-full bg-orange-500/50 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute bottom-40 left-20 w-7 h-7 rounded-full bg-amber-600/30 blur-lg animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/3 right-12 w-4 h-4 rounded-full bg-yellow-500/40 blur-sm animate-pulse" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute bottom-1/4 left-1/4 w-5 h-5 rounded-full bg-orange-600/35 blur-md animate-pulse" style={{ animationDelay: '2s' }} />
 
         {/* Header - только для fullscreen */}
         {!embedded && (
