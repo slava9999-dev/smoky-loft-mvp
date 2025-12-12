@@ -44,11 +44,11 @@ export function FullScreenHallMap({
         desktop: { w: 110, h: 70 }
       },
       window: { 
-        mobile: { w: 55, h: 55 },
+        mobile: { w: 60, h: 60 },
         desktop: { w: 85, h: 85 }
       },
       bar: { 
-        mobile: { w: 35, h: 60 },
+        mobile: { w: 45, h: 65 },
         desktop: { w: 55, h: 90 }
       },
     };
@@ -335,23 +335,28 @@ export function FullScreenHallMap({
                     style={{
                       left: `${table.x}%`,
                       top: `${table.y}%`,
-                      width: tableSize.w,
-                      height: tableSize.h,
+                      width: `${tableSize.w}px`,
+                      height: `${tableSize.h}px`,
                       transform: 'translate(-50%, -50%)',
+                      borderRadius: table.type === 'vip' ? '20px' : '16px',
                       background: isBooked 
-                        ? 'linear-gradient(145deg, #4a1515 0%, #2d0f0f 100%)'
+                        ? 'linear-gradient(145deg, #2a1210 0%, #3f1a16 100%)'
                         : isSelected
-                          ? `linear-gradient(145deg, #5a4520 0%, #3d3018 100%)`
-                          : 'linear-gradient(145deg, #3d3530 0%, #2a2420 100%)',
-                      border: `${isDesktopView ? '3px' : '2px'} solid ${
-                        isBooked ? '#991b1b' : isSelected ? '#fbbf24' : '#5a4a3a'
-                      }`,
+                          ? 'linear-gradient(145deg, #451a03 0%, #92400e 100%)'
+                          : 'linear-gradient(145deg, #1c1917 0%, #292524 100%)',
+                      border: isBooked 
+                        ? '1px solid rgba(248, 113, 113, 0.3)'
+                        : isSelected
+                          ? '2px solid #f59e0b'
+                          : '1px solid rgba(255, 255, 255, 0.1)',
                       boxShadow: isSelected 
                         ? '0 0 40px rgba(251, 191, 36, 0.5), 0 6px 25px rgba(0,0,0,0.4)'
                         : '0 4px 15px rgba(0,0,0,0.3)',
                       opacity: isBooked ? 0.7 : 1,
+                      cursor: 'pointer', // Явный курсор
+                      touchAction: 'manipulation', // Убираем задержку тапа
                     }}
-                    onClick={() => handleTableClick(table)}
+                    onTap={() => handleTableClick(table)} // onTap вместо onClick
                     whileTap={{ scale: 0.95 }}
                     whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(251, 191, 36, 0.3)' }}
                     initial={{ scale: 0, opacity: 0 }}
